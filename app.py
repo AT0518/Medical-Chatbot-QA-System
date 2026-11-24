@@ -750,6 +750,8 @@ if prompt:
             except Exception as exc:
                 raw_error = str(exc)
                 response = f"Unable to complete the request: {raw_error}"
+                is_quota_error = "429" in raw_error or "RESOURCE_EXHAUSTED" in raw_error or "Quota exceeded" in raw_error
+                is_auth_error = "401" in raw_error or "UNAUTHENTICATED" in raw_error or "API key not valid" in raw_error
                 if "Missing required environment variable" in raw_error:
                     env_status = {
                         "MONGODB_URI": bool(os.getenv("MONGODB_URI")),
@@ -761,7 +763,7 @@ if prompt:
                     response += "\n\nEnvironment variables detected (values hidden): " + ", ".join(
                         f"{name}={'set' if present else 'missing'}" for name, present in env_status.items()
                     )
-                elif "429" in raw_error or "RESOURCE_EXHAUSTED" in raw_error or "Quota exceeded" in raw_error:
+                elif is_quota_error:
                     retry_hint = ""
                     match = re.search(r"Please retry in ([^.]+)", raw_error)
                     if match:
@@ -775,10 +777,26 @@ if prompt:
                         "- **Rate limits:** https://aistudio.google.com/docs/rate-limits\n"
                         "- **Usage:** https://ai.dev/rate-limit"
                     )
+                elif is_auth_error:
+                    env_status = {
+                        "GEMINI_API_KEY": bool(os.getenv("GEMINI_API_KEY")),
+                        "GOOGLE_API_KEY": bool(os.getenv("GOOGLE_API_KEY")),
+                    }
+                    env_status_text = ", ".join(
+                        f"{name}={'set' if present else 'missing'}" for name, present in env_status.items()
+                    )
+                    response = (
+                        "## Authentication failed\n"
+                        "- **What happened:** The Gemini API rejected the request because the API credentials are missing, invalid, or unsupported.\n"
+                        "- **Likely cause:** The configured key/token is not a valid Google AI Studio Gemini API key for this API (for example, an expired key or an unsupported access token type).\n"
+                        f"- **Environment variables detected (values hidden):** {env_status_text}\n"
+                        "- **What to do:** Verify the Gemini API key used by the app, replace it with a valid key from Google AI Studio, and ensure it is configured correctly for this environment.\n"
+                        "- **API keys & setup:** https://aistudio.google.com/apikey"
+                    )
 
         formatted_response = format_patient_response(response)
         st.markdown(formatted_response)
-        if raw_error and ("429" in raw_error or "RESOURCE_EXHAUSTED" in raw_error or "Quota exceeded" in raw_error):
+        if raw_error and (is_quota_error or is_auth_error):
             with st.expander("Technical error details"):
                 st.code(raw_error)
 
