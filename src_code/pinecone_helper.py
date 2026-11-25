@@ -1,14 +1,14 @@
 from pinecone import Pinecone, ServerlessSpec
 from src_code.embedding_helper import embedder
 
-pc = Pinecone(api_key="pcsk_3MdazS_Kk11BxuZGRzbXSk1JgPD3rMpvxu1ahgiErBMHx8UXTPF8ZjKoZSxUGpyH6uDwCC")
+pc = Pinecone(api_key="pcsk_3GwCPZ_Gv8obHwLAHtofrrLbgBaQwU7vaFtzYJwp4PcfJNC1WKM2Pfx8pxR3B1WeKtPZ7F")
 index = pc.Index("medical-rag")
 
 def write_to_pinecone(vectors, index = index):
     
     batch_size = 20
 
-    for i in range(100, len(vectors), batch_size):
+    for i in range(0, len(vectors), batch_size):
         index.upsert(vectors=vectors[i:i + batch_size])
 
     print("All documnent uploaded to pinecone")
