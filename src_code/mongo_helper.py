@@ -1,9 +1,16 @@
+import os
+
+from src_code.env import load_project_env
+
+load_project_env()
+
 from pymongo import MongoClient
 
 
 def _connect():
-    
-    connection_string = "mongodb+srv://ritiksharmaofficial2_db_user:eXICLjO7zKyh8Gsw@cluster0.ou8fbat.mongodb.net"
+    connection_string = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI")
+    if not connection_string:
+        raise ValueError("MONGODB_URI environment variable is not set.")
 
     client = MongoClient(connection_string)
 

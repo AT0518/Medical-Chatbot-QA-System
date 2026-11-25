@@ -1,6 +1,10 @@
 import os
 import re
 
+from src_code.env import load_project_env
+
+load_project_env()
+
 import streamlit as st
 from src_code.utils import format_patient_response
 

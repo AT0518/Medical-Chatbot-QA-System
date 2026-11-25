@@ -1,8 +1,21 @@
+import os
+
+from src_code.env import load_project_env
+
+load_project_env()
+
 from pinecone import Pinecone, ServerlessSpec
+
 from src_code.embedding_helper import embedder
 
-pc = Pinecone(api_key="pcsk_3GwCPZ_Gv8obHwLAHtofrrLbgBaQwU7vaFtzYJwp4PcfJNC1WKM2Pfx8pxR3B1WeKtPZ7F")
-index = pc.Index("medical-rag")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "medical-rag")
+
+if not PINECONE_API_KEY:
+    raise ValueError("PINECONE_API_KEY environment variable is not set.")
+
+pc = Pinecone(api_key=PINECONE_API_KEY)
+index = pc.Index(PINECONE_INDEX_NAME)
 
 def write_to_pinecone(vectors, index = index):
     
