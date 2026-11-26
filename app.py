@@ -1,6 +1,10 @@
 import os
 import re
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 from src_code.env import load_project_env
 
 load_project_env()
